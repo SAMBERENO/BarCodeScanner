@@ -43,7 +43,7 @@ export async function getRecordByCode(
     const backendUrl = await getBackendUrl();
 
     const response = await fetch(
-        `${backendUrl}/android/record/${encodeURIComponent(scannedCode)}`,
+        `${backendUrl}/android/getJsonByID?nrZleceniaiPudla=${encodeURIComponent(scannedCode)}`,
         {
             method: "GET"
         }

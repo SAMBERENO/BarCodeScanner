@@ -1,16 +1,32 @@
 import {useState} from "react";
-import {Alert, Pressable, StyleSheet, Text, View} from "react-native";
+import {Pressable, StyleSheet, Text, View} from "react-native";
 import {BarcodeScanningResult, CameraView, useCameraPermissions} from "expo-camera";
 import {styles} from "@/styles";
+import {getRecordByCode} from "@/functions/GetRecordByCode";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { StackParams } from "@/navigation/navigationStack";
+type Props = NativeStackScreenProps<StackParams, "CodesScanner">;
 
-export default function CodesScanner() {
+export default function CodesScanner({ navigation }: Props) {
     const [permission, requestPermission] = useCameraPermissions();
     const [scanned, setScanned] = useState(false);
 
-    function handleBarcodeScanned(result: BarcodeScanningResult) {
+    async function handleBarcodeScanned(result: BarcodeScanningResult) {
         setScanned(true);
-        Alert.alert(`Typ: ${result.type}\nWartość: ${result.data}`);
-        console.log("Zawartość kodu:", result.data);
+        try {
+            const record = await getRecordByCode(result.data);
+
+            navigation.navigate("RecordDetailsScreen", {
+                record: record
+            });
+
+            console.log("Odebrana pozycja:", record);
+            console.log("Nr wyrobu:", record.nrWyrobu);
+            console.log("Nr zlecenia:", record.nrZleceniaiPudla);
+
+        } catch (error) {
+            console.log("Błąd:", error);
+        }
     }
     if (!permission) {
         return (
