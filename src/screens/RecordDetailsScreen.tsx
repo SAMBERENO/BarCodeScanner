@@ -1,8 +1,9 @@
 import {useState} from "react";
-import { ScrollView, Text, TextInput, View, StyleSheet } from "react-native";
-
+import {Alert, Pressable, ScrollView, Text, TextInput, View, StyleSheet} from "react-native";
+import {updateRecord} from "@/functions/UpdateRecord";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {StackParams} from "@/navigation/navigationStack";
+import {RecordsJson} from "@/functions/GetRecordByCode";
 
 type Props = NativeStackScreenProps<
     StackParams,
@@ -41,9 +42,8 @@ export default function RecordDetailsScreen({route}: Props) {
         <ScrollView contentContainerStyle={styles.container}>
 
             <Text style={styles.title}>
-                Dane rekordu
+                Dane pozycji
             </Text>
-
 
             <Text style={styles.label}>Zmiana</Text>
             <Text style={styles.value}>
@@ -140,6 +140,39 @@ export default function RecordDetailsScreen({route}: Props) {
                 </View>
             ))}
 
+            <Pressable
+                style={styles.confirmButton}
+                onPress={async () => {
+                    const updatedRecord: RecordsJson = {
+                        ...record,
+                        sumaBrakow: Number(sumaBrakow),
+                        niezgodnosci: Number(niezgodnosci),
+                        kz: Number(kz),
+                        braki: braki
+                    };
+
+                    try {
+                        await updateRecord(updatedRecord);
+
+                        Alert.alert(
+                            "Zapisano",
+                            "Zmiany zostały zapisane w bazie danych"
+                        );
+                    } catch (error) {
+                        Alert.alert(
+                            "Błąd",
+                            error instanceof Error
+                                ? error.message
+                                : String(error)
+                        );
+                    }
+                }}
+            >
+                <Text style={styles.confirmButtonText}>
+                    Zatwierdź
+                </Text>
+            </Pressable>
+
         </ScrollView>
     );
 }
@@ -166,7 +199,8 @@ const styles = StyleSheet.create({
 
     value: {
         fontSize: 18,
-        paddingVertical: 8
+        paddingVertical: 8,
+        backgroundColor: "#86C8E5"
     },
 
     input: {
@@ -201,5 +235,18 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         padding: 8,
         fontSize: 18
+    },
+
+    confirmButton: {
+        marginTop: 30,
+        padding: 16,
+        alignItems: "center",
+        borderRadius: 10,
+        backgroundColor: "lightgreen"
+    },
+
+    confirmButtonText: {
+        fontSize: 20,
+        fontWeight: "bold"
     }
 });

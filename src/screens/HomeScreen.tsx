@@ -23,7 +23,7 @@ export default function HomeScreen({ navigation }: Props){
            </Pressable>
         </View>
        <View style={styles.middleContainer}>
-           <Pressable onPress={() => navigation.navigate("CodesScanner")}>
+           <Pressable onPress={() => navigation.navigate("BarCodesScanner")}>
                <View style={styles.middleRoundedRectangle}>
                    <Text style={styles.middleButtons}>
                        Skan kodu kreskowego
@@ -44,7 +44,7 @@ export default function HomeScreen({ navigation }: Props){
                    </Text>
                </View>
            </Pressable>
-           <Pressable>
+           <Pressable onPress={() => navigation.navigate("QrScannerScreen")}>
                <View style={styles.middleRoundedRectangle}>
                    <Text style={styles.middleButtons}>
                        Skan kodu QR

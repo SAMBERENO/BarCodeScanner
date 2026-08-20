@@ -1,15 +1,17 @@
-import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import {NavigationContainer} from "@react-navigation/native";
+import {createNativeStackNavigator} from "@react-navigation/native-stack";
 import HomeScreen from "../screens/HomeScreen";
 import DnsConnectionScreen from "@/screens/DnsConnectionScreen";
-import CodesScanner from "@/screens/CodesScanner";
+import BarCodesScanner from "@/screens/BarCodesScanner";
 import {RecordsJson} from "@/functions/GetRecordByCode";
 import RecordDetailsScreen from "@/screens/RecordDetailsScreen";
+import QrScannerScreen from "@/screens/QrScannerScreen";
 
 export type StackParams = {
     HomeScreen: undefined;
     DnsConnectionScreen: undefined;
-    CodesScanner: undefined;
+    BarCodesScanner: undefined;
+    QrScannerScreen: undefined;
     RecordDetailsScreen: {
         record: RecordsJson;
     };
@@ -26,10 +28,13 @@ function MyStack() {
             <Stack.Screen name="DnsConnectionScreen" component={DnsConnectionScreen}
                           options={{headerShown: false}}
             />
-            <Stack.Screen name="CodesScanner" component={CodesScanner}
+            <Stack.Screen name="BarCodesScanner" component={BarCodesScanner}
                           options={{headerShown: false}}
             />
             <Stack.Screen name="RecordDetailsScreen" component={RecordDetailsScreen}
+                          options={{headerShown: false}}
+            />
+            <Stack.Screen name="QrScannerScreen" component={QrScannerScreen}
                           options={{headerShown: false}}
             />
         </Stack.Navigator>

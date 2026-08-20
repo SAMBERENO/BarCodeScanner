@@ -1,40 +1,70 @@
-import {useState} from "react";
-import {Pressable, StyleSheet, Text, View} from "react-native";
+import { useState } from "react";
+import {Alert, Pressable, StyleSheet, Text, View} from "react-native";
 import {BarcodeScanningResult, CameraView, useCameraPermissions} from "expo-camera";
-import {styles} from "@/styles";
-import {getRecordByCode} from "@/functions/GetRecordByCode";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { StackParams } from "@/navigation/navigationStack";
-type Props = NativeStackScreenProps<StackParams, "CodesScanner">;
 
-export default function CodesScanner({ navigation }: Props) {
+import { getBackendUrl } from "@/functions/ConnectToService";
+import {styles} from "@/styles";
+
+export default function QrScannerScreen() {
+
     const [permission, requestPermission] = useCameraPermissions();
     const [scanned, setScanned] = useState(false);
 
-    async function handleBarcodeScanned(result: BarcodeScanningResult) {
-        setScanned(true);
-        try {
-            const record = await getRecordByCode(result.data);
 
-            navigation.navigate("RecordDetailsScreen", {
-                record: record
-            });
+    async function sendQrToJava(qrData: string) {
+        const backendUrl = await getBackendUrl();
 
-            console.log("Odebrana pozycja:", record);
-            console.log("Nr wyrobu:", record.nrWyrobu);
-            console.log("Nr zlecenia:", record.nrZleceniaiPudla);
+        const response = await fetch(
+            `${backendUrl}/android/addJsonFromAndroid`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "text/plain"
+                },
+                body: qrData
+            }
+        );
 
-        } catch (error) {
-            console.log("Błąd:", error);
+        if (!response.ok) {
+            throw new Error(
+                `Błąd wysyłania QR: ${response.status}`
+            );
         }
     }
+
+
+    async function handleQrScanned(
+        result: BarcodeScanningResult
+    ) {
+        setScanned(true);
+
+        try {
+            await sendQrToJava(result.data);
+
+            Alert.alert(
+                "Sukces",
+                "Dane z kodu QR zostały wysłane do Java"
+            );
+        } catch (error) {
+            Alert.alert(
+                "Błąd",
+                error instanceof Error
+                    ? error.message
+                    : String(error)
+            );
+        }
+    }
+
+
     if (!permission) {
         return (
             <View style={localStyles.container}>
-                <Text>Sprawdzanie uprawnień kamery...</Text>
+                <Text>Sprawdzanie dostępu do kamery...</Text>
             </View>
         );
     }
+
+
     if (!permission.granted) {
         return (
             <View style={localStyles.requestContainer}>
@@ -49,26 +79,24 @@ export default function CodesScanner({ navigation }: Props) {
             </View>
         );
     }
+
+
     return (
         <View style={localStyles.container}>
+
             <CameraView
                 style={localStyles.camera}
                 facing="back"
                 barcodeScannerSettings={{
-                    barcodeTypes: [
-                        "qr",
-                        "ean13",
-                        "ean8",
-                        "code128",
-                        "code39",
-                        "upc_a",
-                        "upc_e"
-                    ]
+                    barcodeTypes: ["qr"]
                 }}
                 onBarcodeScanned={
-                    scanned ? undefined : handleBarcodeScanned
+                    scanned
+                        ? undefined
+                        : handleQrScanned
                 }
             />
+
             {scanned && (
                 <View style={localStyles.footerContainer}>
                     <Pressable onPress={() => setScanned(false)}>
@@ -79,7 +107,9 @@ export default function CodesScanner({ navigation }: Props) {
                 </View>
             )}
         </View>
-            );}
+    );
+}
+
 
 const localStyles = StyleSheet.create({
     container: {
@@ -112,4 +142,4 @@ const localStyles = StyleSheet.create({
         textAlign: "center",
         backgroundColor: "#08D8F5"
     }
-})
+});
