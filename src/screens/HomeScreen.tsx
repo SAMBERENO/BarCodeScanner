@@ -16,7 +16,7 @@ export default function HomeScreen({ navigation }: Props){
            <Pressable onPress={() => navigation.navigate("DnsConnectionScreen")}>
                <View style={localStyles.statusContainer}>
                    <Text style={styles.headerDeffText}>
-                       PC of death
+                       Host PC
                    </Text>
                    <Text style={styles.headerStatus}/>
                </View>
