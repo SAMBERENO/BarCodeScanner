@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {Pressable, StyleSheet, Text, View} from "react-native";
+import {Alert, Pressable, StyleSheet, Text, View} from "react-native";
 import {BarcodeScanningResult, CameraView, useCameraPermissions} from "expo-camera";
 import {styles} from "@/styles";
 import {getRecordByCode} from "@/functions/GetRecordByCode";
@@ -10,24 +10,63 @@ type Props = NativeStackScreenProps<StackParams, "BarCodesScanner">;
 export default function BarCodesScanner({ navigation }: Props) {
     const [permission, requestPermission] = useCameraPermissions();
     const [scanned, setScanned] = useState(false);
+    const [focusMode, setFocusMode] = useState(false);
+    const [cameraWidth, setCameraWidth] = useState(0);
+    const [cameraHeight, setCameraHeight] = useState(0);
 
     async function handleBarcodeScanned(result: BarcodeScanningResult) {
+        if (focusMode) {
+
+            const barcodeCenterX =
+                result.bounds.origin.x +
+                result.bounds.size.width / 2;
+
+            const barcodeCenterY =
+                result.bounds.origin.y +
+                result.bounds.size.height / 2;
+
+
+            const scannerLeft = cameraWidth * 0.20;
+            const scannerRight = cameraWidth * 0.80;
+
+            const scannerTop = cameraHeight * 0.40;
+            const scannerBottom = cameraHeight * 0.60;
+
+
+            const isInsideScanner =
+                barcodeCenterX >= scannerLeft &&
+                barcodeCenterX <= scannerRight &&
+                barcodeCenterY >= scannerTop &&
+                barcodeCenterY <= scannerBottom;
+
+
+            if (!isInsideScanner) {
+                return;
+            }
+        }
+
         setScanned(true);
+
         try {
             const record = await getRecordByCode(result.data);
 
-            navigation.navigate("RecordDetailsScreen", {
-                record: record
-            });
-
-            console.log("Odebrana pozycja:", record);
-            console.log("Nr wyrobu:", record.nrWyrobu);
-            console.log("Nr zlecenia:", record.nrZleceniaiPudla);
+            navigation.navigate(
+                "RecordDetailsScreen",
+                {
+                    record: record
+                }
+            );
 
         } catch (error) {
-            console.log("Błąd:", error);
+            Alert.alert(
+                "Błąd",
+                error instanceof Error
+                    ? error.message
+                    : String(error)
+            );
         }
     }
+
     if (!permission) {
         return (
             <View style={localStyles.container}>
@@ -35,6 +74,7 @@ export default function BarCodesScanner({ navigation }: Props) {
             </View>
         );
     }
+    
     if (!permission.granted) {
         return (
             <View style={localStyles.requestContainer}>
@@ -49,26 +89,49 @@ export default function BarCodesScanner({ navigation }: Props) {
             </View>
         );
     }
+
     return (
-        <View style={localStyles.container}>
+        <View style={localStyles.container}
+              onLayout={(event) => {
+
+                  const { width, height } =
+                      event.nativeEvent.layout;
+
+                  setCameraWidth(width);
+                  setCameraHeight(height);
+              }}>
             <CameraView
-                style={localStyles.camera}
+                style={StyleSheet.absoluteFill}
                 facing="back"
                 barcodeScannerSettings={{
-                    barcodeTypes: [
-                        "qr",
-                        "ean13",
-                        "ean8",
-                        "code128",
-                        "code39",
-                        "upc_a",
-                        "upc_e"
-                    ]
+                    barcodeTypes: ["code128"]
                 }}
                 onBarcodeScanned={
-                    scanned ? undefined : handleBarcodeScanned
+                    scanned
+                        ? undefined
+                        : handleBarcodeScanned
                 }
             />
+            {focusMode && (
+                <View
+                    pointerEvents="none"
+                    style={localStyles.scannerFrame}
+                />
+            )}
+            {!scanned && (
+                <Pressable
+                    style={localStyles.focusButton}
+                    onPress={() =>
+                        setFocusMode(previous => !previous)
+                    }
+                >
+                    <Text style={localStyles.focusButtonText}>
+                        {focusMode
+                            ? "Wyłącz tryb skupienia"
+                            : "Tryb skupienia"}
+                    </Text>
+                </Pressable>
+            )}
             {scanned && (
                 <View style={localStyles.footerContainer}>
                     <Pressable onPress={() => setScanned(false)}>
@@ -111,5 +174,35 @@ const localStyles = StyleSheet.create({
         height: 60,
         textAlign: "center",
         backgroundColor: "#08D8F5"
+    },
+    scannerFrame: {
+        position: "absolute",
+
+        width: "60%",
+        height: "20%",
+
+        left: "20%",
+        top: "40%",
+
+        borderWidth: 3,
+        borderColor: "red"
+    },
+
+    focusButton: {
+        height: 70,
+        marginHorizontal: 20,
+        marginBottom: 40,
+
+        justifyContent: "center",
+        alignItems: "center",
+
+        borderRadius: 10,
+        backgroundColor: "lightgray"
+    },
+
+    focusButtonText: {
+        fontSize: 20,
+        fontWeight: "bold",
+        textAlign: "center"
     }
 })
