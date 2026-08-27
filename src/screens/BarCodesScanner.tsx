@@ -103,9 +103,6 @@ export default function BarCodesScanner({ navigation }: Props) {
             <CameraView
                 style={StyleSheet.absoluteFill}
                 facing="back"
-                barcodeScannerSettings={{
-                    barcodeTypes: ["code128"]
-                }}
                 onBarcodeScanned={
                     scanned
                         ? undefined
@@ -119,18 +116,14 @@ export default function BarCodesScanner({ navigation }: Props) {
                 />
             )}
             {!scanned && (
-                <Pressable
-                    style={localStyles.focusButton}
-                    onPress={() =>
-                        setFocusMode(previous => !previous)
-                    }
-                >
-                    <Text style={localStyles.focusButtonText}>
-                        {focusMode
-                            ? "Wyłącz tryb skupienia"
-                            : "Tryb skupienia"}
-                    </Text>
-                </Pressable>
+                <View style={localStyles.footerContainer}>
+                    <Pressable onPress={() => setFocusMode
+                    (previous => !previous)}>
+                        <Text style={localStyles.focusButton}>
+                        {focusMode ? "Wyłącz tryb skupienia" : "Tryb skupienia"}
+                        </Text>
+                    </Pressable>
+                </View>
             )}
             {scanned && (
                 <View style={localStyles.footerContainer}>
@@ -178,10 +171,9 @@ const localStyles = StyleSheet.create({
     scannerFrame: {
         position: "absolute",
 
-        width: "60%",
-        height: "20%",
+        width: "100%",
+        height: "10%",
 
-        left: "20%",
         top: "40%",
 
         borderWidth: 3,
@@ -198,11 +190,5 @@ const localStyles = StyleSheet.create({
 
         borderRadius: 10,
         backgroundColor: "lightgray"
-    },
-
-    focusButtonText: {
-        fontSize: 20,
-        fontWeight: "bold",
-        textAlign: "center"
     }
 })

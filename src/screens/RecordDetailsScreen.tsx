@@ -11,20 +11,11 @@ type Props = NativeStackScreenProps<
 >;
 
 export default function RecordDetailsScreen({route}: Props) {
-
     const record = route.params.record;
-
-    const [sumaBrakow, setSumaBrakow] =
-        useState(String(record.sumaBrakow));
-
-    const [niezgodnosci, setNiezgodnosci] =
-        useState(String(record.niezgodnosci));
-
-    const [kz, setKz] =
-        useState(String(record.kz));
-
-    const [braki, setBraki] =
-        useState({...record.braki});
+    const [sumaBrakow, setSumaBrakow] = useState(String(record.sumaBrakow));
+    const [niezgodnosci, setNiezgodnosci] = useState(String(record.niezgodnosci));
+    const [kz, setKz] = useState(record.kz ? "1" : "0");
+    const [braki, setBraki] = useState({...record.braki});
 
 
     function changeBrak(
