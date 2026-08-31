@@ -13,8 +13,6 @@ export default function BarCodesScanner({ navigation }: Props) {
     const [focusMode, setFocusMode] = useState(false);
     const [cameraWidth, setCameraWidth] = useState(0.0);
     const [cameraHeight, setCameraHeight] = useState(0.0);
-    const middleWidth = cameraWidth/2;
-    const middleHeight = cameraHeight/2;
 
     async function handleBarcodeScanned(result: BarcodeScanningResult) {
         if (focusMode) {
@@ -27,11 +25,11 @@ export default function BarCodesScanner({ navigation }: Props) {
                 result.bounds.origin.y +
                 result.bounds.size.height / 2;
 
-            const scannerLeft = middleWidth - parseFloat(localStyles.scannerFrame.width)/2;
-            const scannerRight = middleWidth + parseFloat(localStyles.scannerFrame.width)/2;
+            const scannerLeft = 0;
+            const scannerRight = cameraWidth;
 
-            const scannerTop = middleHeight - parseFloat(localStyles.scannerFrame.height)/2;
-            const scannerBottom = middleHeight + parseFloat(localStyles.scannerFrame.height)/2;
+            const scannerTop = cameraHeight * 0.45;
+            const scannerBottom = cameraHeight * 0.55;
 
             const isInsideScanner =
                 barcodeCenterX >= scannerLeft &&
@@ -127,7 +125,9 @@ export default function BarCodesScanner({ navigation }: Props) {
             )}
             {scanned && (
                 <View style={localStyles.footerContainer}>
-                    <Pressable onPress={() => setScanned(false)}>
+                    <Pressable onPress={() => {
+                        setScanned(false);
+                    }}>
                         <Text style={localStyles.footerButton}>
                             Następny kod
                         </Text>
@@ -174,7 +174,7 @@ const localStyles = StyleSheet.create({
         width: "100%",
         height: "10%",
 
-        top: "40%",
+        top: "45%",
 
         borderWidth: 3,
         borderColor: "red"
