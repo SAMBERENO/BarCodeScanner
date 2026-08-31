@@ -26,12 +26,14 @@ export default function BarCodesScanner({ navigation }: Props) {
                 result.bounds.size.height / 2;
 
 
-            const scannerLeft = cameraWidth * 0.20;
-            const scannerRight = cameraWidth * 0.80;
+            const scannerLeft = cameraWidth * 0.2;
+            const scannerRight = cameraWidth * 0.8;
 
-            const scannerTop = cameraHeight * 0.40;
-            const scannerBottom = cameraHeight * 0.60;
+            //const scannerLeft = parseFloat(localStyles.scannerFrame.height);
+            //const scannerRight = parseFloat(localStyles.scannerFrame.width);
 
+            const scannerTop = cameraHeight * 0.4;
+            const scannerBottom = cameraHeight * 0.6;
 
             const isInsideScanner =
                 barcodeCenterX >= scannerLeft &&
@@ -119,7 +121,7 @@ export default function BarCodesScanner({ navigation }: Props) {
                 <View style={localStyles.footerContainer}>
                     <Pressable onPress={() => setFocusMode
                     (previous => !previous)}>
-                        <Text style={localStyles.focusButton}>
+                        <Text style={localStyles.footerButton}>
                         {focusMode ? "Wyłącz tryb skupienia" : "Tryb skupienia"}
                         </Text>
                     </Pressable>
