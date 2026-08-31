@@ -11,8 +11,10 @@ export default function BarCodesScanner({ navigation }: Props) {
     const [permission, requestPermission] = useCameraPermissions();
     const [scanned, setScanned] = useState(false);
     const [focusMode, setFocusMode] = useState(false);
-    const [cameraWidth, setCameraWidth] = useState(0);
-    const [cameraHeight, setCameraHeight] = useState(0);
+    const [cameraWidth, setCameraWidth] = useState(0.0);
+    const [cameraHeight, setCameraHeight] = useState(0.0);
+    const middleWidth = cameraWidth/2;
+    const middleHeight = cameraHeight/2;
 
     async function handleBarcodeScanned(result: BarcodeScanningResult) {
         if (focusMode) {
@@ -25,15 +27,11 @@ export default function BarCodesScanner({ navigation }: Props) {
                 result.bounds.origin.y +
                 result.bounds.size.height / 2;
 
+            const scannerLeft = middleWidth - parseFloat(localStyles.scannerFrame.width)/2;
+            const scannerRight = middleWidth + parseFloat(localStyles.scannerFrame.width)/2;
 
-            const scannerLeft = cameraWidth * 0.2;
-            const scannerRight = cameraWidth * 0.8;
-
-            //const scannerLeft = parseFloat(localStyles.scannerFrame.height);
-            //const scannerRight = parseFloat(localStyles.scannerFrame.width);
-
-            const scannerTop = cameraHeight * 0.4;
-            const scannerBottom = cameraHeight * 0.6;
+            const scannerTop = middleHeight - parseFloat(localStyles.scannerFrame.height)/2;
+            const scannerBottom = middleHeight + parseFloat(localStyles.scannerFrame.height)/2;
 
             const isInsideScanner =
                 barcodeCenterX >= scannerLeft &&
