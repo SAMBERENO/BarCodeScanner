@@ -170,12 +170,9 @@ const localStyles = StyleSheet.create({
     },
     scannerFrame: {
         position: "absolute",
-
         width: "100%",
         height: "10%",
-
         top: "45%",
-
         borderWidth: 3,
         borderColor: "red"
     },
@@ -184,10 +181,8 @@ const localStyles = StyleSheet.create({
         height: 70,
         marginHorizontal: 20,
         marginBottom: 40,
-
         justifyContent: "center",
         alignItems: "center",
-
         borderRadius: 10,
         backgroundColor: "lightgray"
     }

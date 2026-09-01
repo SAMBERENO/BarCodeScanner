@@ -40,7 +40,7 @@ export default function HomeScreen({ navigation }: Props){
            <Pressable>
                <View style={styles.middleRoundedRectangle}>
                    <Text style={styles.middleButtons}>
-                       Wybór zdjęcia z biblioteki do skanu
+                       Skan listy z wyrobami
                    </Text>
                </View>
            </Pressable>
