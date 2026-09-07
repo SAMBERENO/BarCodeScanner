@@ -108,7 +108,9 @@ export default function RecordDetailsScreen({route}: Props) {
                 Braki
             </Text>
 
-            {Object.entries(braki).map(([key, value]) => (
+            {Object.entries(braki)
+                .filter(([key]) => key !== "values")
+                .map(([key, value]) => (
                 <View
                     key={key}
                     style={styles.brakRow}
