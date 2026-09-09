@@ -15,6 +15,12 @@ export async function fetchWithTimeout(
             ...options,
             signal: controller.signal
         });
+    } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") {
+            throw new Error("Przekroczono czas oczekiwania na backend");
+        }
+
+        throw error;
     } finally {
         clearTimeout(timeoutId);
     }

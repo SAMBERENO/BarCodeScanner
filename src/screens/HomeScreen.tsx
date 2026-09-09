@@ -11,7 +11,7 @@ export default function HomeScreen({ navigation }: Props){
    <View style={styles.mainContainer}>
        <View style={styles.headerContainer}>
         <Text style={styles.headerVersion}>
-            1.0
+            1.1123123
         </Text>
            <Pressable onPress={() => navigation.navigate("DnsConnectionScreen")}>
                <View style={localStyles.statusContainer}>
