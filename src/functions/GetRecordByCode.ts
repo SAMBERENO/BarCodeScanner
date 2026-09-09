@@ -1,4 +1,5 @@
 import { getBackendUrl } from "./ConnectToService";
+import {fetchWithTimeout} from "@/functions/fetchWithTimeout";
 
 export type RecordsJson = {
     zmiana: string;
@@ -42,7 +43,7 @@ export async function getRecordByCode(
 
     const backendUrl = await getBackendUrl();
 
-    const response = await fetch(
+    const response = await fetchWithTimeout(
         `${backendUrl}/android/getJsonByID?nrZleceniaiPudla=${encodeURIComponent(scannedCode)}`,
         {
             method: "GET"
