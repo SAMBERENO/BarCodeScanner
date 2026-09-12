@@ -18,12 +18,8 @@ export async function fetchWithTimeout(
             signal: controller.signal
         });
     } catch (error) {
-        if (error instanceof Error && error.name === "AbortError") {
-            Alert.alert("Przekroczono czas oczekiwania na backend");
-            return Promise.reject(error);
-        }
-
-        throw error;
+        Alert.alert("Przekroczono czas oczekiwania na backend");
+        return Promise.reject(error);
     } finally {
         clearTimeout(timeoutId);
     }

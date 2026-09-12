@@ -42,7 +42,7 @@ export default function HomeScreen({ navigation }: Props){
                    <Pressable onPress={async () => {
                        await addPdfRecords();}}>
                    <Text style={styles.middleButtons}>
-                       Dodanie pozycji z listu PDF
+                       Dodanie pozycji z PDF
                    </Text>
            </Pressable>
        </View>

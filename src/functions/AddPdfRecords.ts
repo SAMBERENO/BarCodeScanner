@@ -11,7 +11,7 @@ export async function addPdfRecords(): Promise<void> {
         }
     );
     if (!response.ok) {
-        Alert.alert(response.statusText);
+        Alert.alert("Coś poszło nie tak");
     }
     if (response.ok) {
         Alert.alert("Odczytano PDF");
