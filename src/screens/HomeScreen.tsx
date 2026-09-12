@@ -3,6 +3,7 @@ import {styles} from '@/styles'
 import {StackParams} from "@/navigation/navigationStack";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import { createLists } from "@/functions/CreateLists";
+import {addPdfRecords} from "@/functions/AddPdfRecords";
 
 type Props = NativeStackScreenProps<StackParams, "HomeScreen">;
 
@@ -37,13 +38,14 @@ export default function HomeScreen({ navigation }: Props){
                    </Text>
                </View>
            </Pressable>
-           <Pressable>
                <View style={styles.middleRoundedRectangle}>
+                   <Pressable onPress={async () => {
+                       await addPdfRecords();}}>
                    <Text style={styles.middleButtons}>
-                       Skan listy z wyrobami
+                       Dodanie pozycji z listu PDF
                    </Text>
-               </View>
            </Pressable>
+       </View>
            <Pressable onPress={() => navigation.navigate("QrScannerScreen")}>
                <View style={styles.middleRoundedRectangle}>
                    <Text style={styles.middleButtons}>
@@ -59,12 +61,8 @@ export default function HomeScreen({ navigation }: Props){
                </Text>
            </View>
             <View style={styles.footerRoundedRectangle}>
-                <Pressable onPress={async () => { try {
-                    await createLists();
-                    console.log("createLists wykonane poprawnie");
-                } catch (error) {
-                    console.log("Błąd:", error);
-                }}}>
+                <Pressable onPress={async () => {
+                    await createLists();}}>
                 <Text style={styles.footerButtons}>
                     Utworzenie Excela
                 </Text>
