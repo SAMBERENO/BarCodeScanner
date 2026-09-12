@@ -1,3 +1,5 @@
+import {Alert} from "react-native";
+
 export async function fetchWithTimeout(
     url: string,
     options: RequestInit = {},
@@ -17,7 +19,8 @@ export async function fetchWithTimeout(
         });
     } catch (error) {
         if (error instanceof Error && error.name === "AbortError") {
-            throw new Error("Przekroczono czas oczekiwania na backend");
+            Alert.alert("Przekroczono czas oczekiwania na backend");
+            return Promise.reject(error);
         }
 
         throw error;
