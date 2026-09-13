@@ -8,6 +8,8 @@ type Props = NativeStackScreenProps<StackParams, "RecordDetailsScreen">;
 
 export default function RecordDetailsScreen({route}: Props) {
     const record = route.params.record;
+    const [zmiana, setZmiana] = useState(String(record.zmiana));
+    const [dataProdukcji, setDataProdukcji] = useState(String(record.dataProdukcji));
     const [sumaBrakow, setSumaBrakow] = useState(String(record.sumaBrakow));
     const [niezgodnosci, setNiezgodnosci] = useState(String(record.niezgodnosci));
     const [kz, setKz] = useState(record.kz ? "1" : "0");
@@ -32,12 +34,19 @@ export default function RecordDetailsScreen({route}: Props) {
                 Dane pozycji
             </Text>
 
-            <Text style={styles.label}>Zmiana</Text>
-            <Text style={styles.value}>
-                {record.zmiana}
+            <Text style={styles.label}>
+                Zmiana
             </Text>
+            <TextInput
+                style={styles.input}
+                value={zmiana}
+                onChangeText={setZmiana}
+                keyboardType="default"
+            />
 
-            <Text style={styles.label}>Nr wyrobu</Text>
+            <Text style={styles.label}>
+                Nr wyrobu
+            </Text>
             <Text style={styles.value}>
                 {record.nrWyrobu}
             </Text>
@@ -52,58 +61,51 @@ export default function RecordDetailsScreen({route}: Props) {
             <Text style={styles.label}>
                 Data produkcji
             </Text>
-            <Text style={styles.value}>
-                {record.dataProdukcji}
-            </Text>
-
+            <TextInput
+                style={styles.input}
+                value={dataProdukcji}
+                keyboardType="default"
+                onChangeText={(text) => {
+                    const filtered = text.replace(/[^0-9/]/g, "");
+                    setDataProdukcji(filtered);
+                }}
+            />
             <Text style={styles.label}>
                 Suma uszczelek
             </Text>
             <Text style={styles.value}>
                 {record.sumaUszczelek}
             </Text>
-
-
             <Text style={styles.label}>
                 Suma braków
             </Text>
-
             <TextInput
                 style={styles.input}
                 value={sumaBrakow}
                 onChangeText={setSumaBrakow}
                 keyboardType="numeric"
             />
-
-
             <Text style={styles.label}>
                 Niezgodności
             </Text>
-
             <TextInput
                 style={styles.input}
                 value={niezgodnosci}
                 onChangeText={setNiezgodnosci}
                 keyboardType="numeric"
             />
-
-
             <Text style={styles.label}>
                 KZ
             </Text>
-
             <TextInput
                 style={styles.input}
                 value={kz}
                 onChangeText={setKz}
                 keyboardType="numeric"
             />
-
-
             <Text style={styles.sectionTitle}>
                 Braki
             </Text>
-
             {Object.entries(braki)
                 .filter(([key]) => key !== "values")
                 .map(([key, value]) => (
@@ -124,11 +126,9 @@ export default function RecordDetailsScreen({route}: Props) {
                                 key as keyof typeof braki,
                                 text
                             )
-                        }
-                    />
+                        }/>
                 </View>
             ))}
-
             <Pressable
                 style={styles.confirmButton}
                 onPress={async () => {
@@ -139,7 +139,6 @@ export default function RecordDetailsScreen({route}: Props) {
                         kz: Number(kz),
                         braki: braki
                     };
-
                     try {
                         await updateRecord(updatedRecord);
 
@@ -155,8 +154,7 @@ export default function RecordDetailsScreen({route}: Props) {
                                 : String(error)
                         );
                     }
-                }}
-            >
+                }}>
                 <Text style={styles.confirmButtonText}>
                     Zatwierdź
                 </Text>
@@ -165,33 +163,27 @@ export default function RecordDetailsScreen({route}: Props) {
         </ScrollView>
     );
 }
-
-
 const styles = StyleSheet.create({
 
     container: {
         padding: 20,
         paddingBottom: 60
     },
-
     title: {
         fontSize: 26,
         fontWeight: "bold",
         marginBottom: 20
     },
-
     label: {
         fontSize: 16,
         fontWeight: "bold",
         marginTop: 12
     },
-
     value: {
         fontSize: 18,
         paddingVertical: 8,
         backgroundColor: "#86C8E5"
     },
-
     input: {
         borderWidth: 1,
         borderRadius: 8,
@@ -199,25 +191,21 @@ const styles = StyleSheet.create({
         fontSize: 18,
         marginTop: 5
     },
-
     sectionTitle: {
         fontSize: 22,
         fontWeight: "bold",
         marginTop: 25,
         marginBottom: 10
     },
-
     brakRow: {
         flexDirection: "row",
         alignItems: "center",
         marginBottom: 8
     },
-
     brakName: {
         width: 40,
         fontSize: 18
     },
-
     brakInput: {
         flex: 1,
         borderWidth: 1,
@@ -225,7 +213,6 @@ const styles = StyleSheet.create({
         padding: 8,
         fontSize: 18
     },
-
     confirmButton: {
         marginTop: 30,
         padding: 16,
@@ -233,7 +220,6 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         backgroundColor: "lightgreen"
     },
-
     confirmButtonText: {
         fontSize: 20,
         fontWeight: "bold"

@@ -38,14 +38,13 @@ export default function HomeScreen({ navigation }: Props){
                    </Text>
                </View>
            </Pressable>
+           <Pressable onPress={async () => {await addPdfRecords();}}>
                <View style={styles.middleRoundedRectangle}>
-                   <Pressable onPress={async () => {
-                       await addPdfRecords();}}>
                    <Text style={styles.middleButtons}>
                        Dodanie pozycji z PDF
                    </Text>
+                </View>
            </Pressable>
-       </View>
            <Pressable onPress={() => navigation.navigate("QrScannerScreen")}>
                <View style={styles.middleRoundedRectangle}>
                    <Text style={styles.middleButtons}>
@@ -55,13 +54,13 @@ export default function HomeScreen({ navigation }: Props){
            </Pressable>
        </View>
        <View style={styles.footerContainer}>
-           <Pressable onPress={() => navigation.navigate("DatabaseRecordsScreen")}>
-                <View style={styles.footerRoundedRectangle}>
+           <View style={styles.footerRoundedRectangle}>
+               <Pressable onPress={() => navigation.navigate("DatabaseRecordsScreen")}>
                     <Text style={styles.footerButtons}>
                         Zawartość bazy danych
                     </Text>
-                </View>
-           </Pressable>
+               </Pressable>
+           </View>
            <View style={styles.footerRoundedRectangle}>
                 <Pressable onPress={async () => {await createLists();}}>
                     <Text style={styles.footerButtons}>

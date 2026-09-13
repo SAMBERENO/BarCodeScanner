@@ -170,7 +170,9 @@ export default function DatabaseRecordsScreen({navigation}: Props) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 20
+        padding: 20,
+        paddingBottom: 50,
+        backgroundColor: "#86C8E5",
     },
     title: {
         fontSize: 26,
@@ -184,7 +186,7 @@ const styles = StyleSheet.create({
         padding: 10
     },
     approved: {
-        backgroundColor: "#ffffff"
+        backgroundColor: "#A3FFAB"
     },
     notApproved: {
         backgroundColor: "#ffd6d8"
