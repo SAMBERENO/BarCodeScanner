@@ -55,17 +55,18 @@ export default function HomeScreen({ navigation }: Props){
            </Pressable>
        </View>
        <View style={styles.footerContainer}>
+           <Pressable onPress={() => navigation.navigate("DatabaseRecordsScreen")}>
+                <View style={styles.footerRoundedRectangle}>
+                    <Text style={styles.footerButtons}>
+                        Zawartość bazy danych
+                    </Text>
+                </View>
+           </Pressable>
            <View style={styles.footerRoundedRectangle}>
-               <Text style={styles.footerButtons}>
-                   Zawartość bazy danych
-               </Text>
-           </View>
-            <View style={styles.footerRoundedRectangle}>
-                <Pressable onPress={async () => {
-                    await createLists();}}>
-                <Text style={styles.footerButtons}>
-                    Utworzenie Excela
-                </Text>
+                <Pressable onPress={async () => {await createLists();}}>
+                    <Text style={styles.footerButtons}>
+                        Utworzenie Excela
+                    </Text>
                 </Pressable>
             </View>
        </View>

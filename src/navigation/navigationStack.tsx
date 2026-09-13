@@ -6,12 +6,14 @@ import BarCodesScanner from "@/screens/BarCodesScanner";
 import {RecordsJson} from "@/functions/GetRecordByCode";
 import RecordDetailsScreen from "@/screens/RecordDetailsScreen";
 import QrScannerScreen from "@/screens/QrScannerScreen";
+import DatabaseRecordsScreen from "@/screens/DatabaseRecordsScreen";
 
 export type StackParams = {
     HomeScreen: undefined;
     DnsConnectionScreen: undefined;
     BarCodesScanner: undefined;
     QrScannerScreen: undefined;
+    DatabaseRecordsScreen: undefined;
     RecordDetailsScreen: {
         record: RecordsJson;
     };
@@ -35,6 +37,9 @@ function MyStack() {
                           options={{headerShown: false}}
             />
             <Stack.Screen name="QrScannerScreen" component={QrScannerScreen}
+                          options={{headerShown: false}}
+            />
+            <Stack.Screen name="DatabaseRecordsScreen" component={DatabaseRecordsScreen}
                           options={{headerShown: false}}
             />
         </Stack.Navigator>

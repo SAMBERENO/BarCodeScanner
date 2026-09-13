@@ -2,12 +2,8 @@ import { getBackendUrl } from "./ConnectToService";
 import type { RecordsJson } from "./GetRecordByCode";
 import {fetchWithTimeout} from "@/functions/fetchWithTimeout";
 
-export async function updateRecord(
-    record: RecordsJson
-): Promise<void> {
-
+export async function updateRecord(record: RecordsJson): Promise<void> {
     const backendUrl = await getBackendUrl();
-
     const response = await fetchWithTimeout(
         `${backendUrl}/android/updateRecord`,
         {
@@ -18,7 +14,6 @@ export async function updateRecord(
             body: JSON.stringify(record)
         }
     );
-
     if (!response.ok) {
         throw new Error(
             `Nie udało się zaktualizować pozycji: ${response.status}`

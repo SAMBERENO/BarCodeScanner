@@ -4,11 +4,7 @@ import {updateRecord} from "@/functions/UpdateRecord";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {StackParams} from "@/navigation/navigationStack";
 import {RecordsJson} from "@/functions/GetRecordByCode";
-
-type Props = NativeStackScreenProps<
-    StackParams,
-    "RecordDetailsScreen"
->;
+type Props = NativeStackScreenProps<StackParams, "RecordDetailsScreen">;
 
 export default function RecordDetailsScreen({route}: Props) {
     const record = route.params.record;

@@ -40,23 +40,18 @@ export type RecordsJson = {
 export async function getRecordByCode(
     scannedCode: string
 ): Promise<RecordsJson> {
-
     const backendUrl = await getBackendUrl();
-
     const response = await fetchWithTimeout(
         `${backendUrl}/android/getJsonByID?nrZleceniaiPudla=${encodeURIComponent(scannedCode)}`,
         {
             method: "GET"
         }
     );
-
     if (!response.ok) {
         throw new Error(
             `Nie udało się pobrać pozycji: ${response.status}`
         );
     }
-
     const record: RecordsJson = await response.json();
-
     return record;
 }
