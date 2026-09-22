@@ -134,6 +134,8 @@ export default function RecordDetailsScreen({route}: Props) {
                 onPress={async () => {
                     const updatedRecord: RecordsJson = {
                         ...record,
+                        zmiana: zmiana,
+                        dataProdukcji: dataProdukcji,
                         sumaBrakow: Number(sumaBrakow),
                         niezgodnosci: Number(niezgodnosci),
                         kz: Number(kz),
