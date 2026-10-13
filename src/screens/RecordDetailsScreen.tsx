@@ -4,10 +4,14 @@ import {updateRecord} from "@/functions/UpdateRecord";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {StackParams} from "@/navigation/navigationStack";
 import {RecordsJson} from "@/functions/GetRecordByCode";
+import {loadLocalRecords, updateLocalRecord} from "@/functions/LocalRecordsStore";
+import type { DatabaseRecord } from "@/functions/GetAllRecords";
+
 type Props = NativeStackScreenProps<StackParams, "RecordDetailsScreen">;
 
-export default function RecordDetailsScreen({route}: Props) {
-    const record = route.params.record;
+export default function RecordDetailsScreen({navigation, route}: Props) {
+    const { record, mode = "local" } = route.params;
+
     const [zmiana, setZmiana] = useState(String(record.zmiana));
     const [dataProdukcji, setDataProdukcji] = useState(String(record.dataProdukcji));
     const [sumaBrakow, setSumaBrakow] = useState(String(record.sumaBrakow));
@@ -15,6 +19,55 @@ export default function RecordDetailsScreen({route}: Props) {
     const [kz, setKz] = useState(record.kz ? "1" : "0");
     const [braki, setBraki] = useState({...record.braki});
 
+    function buildUpdatedRecord(): RecordsJson {
+        return {
+            ...record,
+            zmiana: zmiana,
+            dataProdukcji: dataProdukcji,
+            sumaBrakow: Number(sumaBrakow),
+            niezgodnosci: Number(niezgodnosci),
+            kz: Number(kz),
+            braki: braki
+        };
+    }
+
+    async function buildDatabaseRecord(
+        recordsJson: RecordsJson
+    ): Promise<DatabaseRecord> {
+        const current = await loadLocalRecords();
+        const existing = current.find(
+            r => r.recordsJson.nrZleceniaiPudla === recordsJson.nrZleceniaiPudla
+        );
+        return {
+            recordsJson,
+            zatwierdzone: existing?.zatwierdzone ?? 0
+        };
+    }
+
+    async function handleSave() {
+        try {
+            const updatedRecord = buildUpdatedRecord();
+            const databaseRecord = await buildDatabaseRecord(updatedRecord);
+
+            // Zawsze aktualizujemy lokalną kopię.
+            await updateLocalRecord(databaseRecord);
+
+            // Tryb "remote" dodatkowo wypycha na backend.
+            if (mode === "remote") {
+                await updateRecord(updatedRecord);
+                Alert.alert("Sukces", "Zapisano lokalnie i wysłano na backend.");
+            } else {
+                Alert.alert("Sukces", "Zapisano lokalnie.");
+            }
+
+            navigation.goBack();
+        } catch (error) {
+            Alert.alert(
+                "Błąd",
+                error instanceof Error ? error.message : String(error)
+            );
+        }
+    }
 
     function changeBrak(
         key: keyof typeof braki,
@@ -25,7 +78,6 @@ export default function RecordDetailsScreen({route}: Props) {
             [key]: Number(value)
         }));
     }
-
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
@@ -109,54 +161,29 @@ export default function RecordDetailsScreen({route}: Props) {
             {Object.entries(braki)
                 .filter(([key]) => key !== "values")
                 .map(([key, value]) => (
-                <View
-                    key={key}
-                    style={styles.brakRow}
-                >
-                    <Text style={styles.brakName}>
-                        {key}
-                    </Text>
+                    <View
+                        key={key}
+                        style={styles.brakRow}
+                    >
+                        <Text style={styles.brakName}>
+                            {key}
+                        </Text>
 
-                    <TextInput
-                        style={styles.brakInput}
-                        value={String(value)}
-                        keyboardType="numeric"
-                        onChangeText={(text) =>
-                            changeBrak(
-                                key as keyof typeof braki,
-                                text
-                            )
-                        }/>
-                </View>
-            ))}
+                        <TextInput
+                            style={styles.brakInput}
+                            value={String(value)}
+                            keyboardType="numeric"
+                            onChangeText={(text) =>
+                                changeBrak(
+                                    key as keyof typeof braki,
+                                    text
+                                )
+                            }/>
+                    </View>
+                ))}
             <Pressable
                 style={styles.confirmButton}
-                onPress={async () => {
-                    const updatedRecord: RecordsJson = {
-                        ...record,
-                        zmiana: zmiana,
-                        dataProdukcji: dataProdukcji,
-                        sumaBrakow: Number(sumaBrakow),
-                        niezgodnosci: Number(niezgodnosci),
-                        kz: Number(kz),
-                        braki: braki
-                    };
-                    try {
-                        await updateRecord(updatedRecord);
-
-                        Alert.alert(
-                            "Zapisano",
-                            "Zmiany zostały zapisane w bazie danych"
-                        );
-                    } catch (error) {
-                        Alert.alert(
-                            "Błąd",
-                            error instanceof Error
-                                ? error.message
-                                : String(error)
-                        );
-                    }
-                }}>
+                onPress={handleSave}>
                 <Text style={styles.confirmButtonText}>
                     Zatwierdź
                 </Text>
@@ -165,8 +192,8 @@ export default function RecordDetailsScreen({route}: Props) {
         </ScrollView>
     );
 }
-const styles = StyleSheet.create({
 
+const styles = StyleSheet.create({
     container: {
         padding: 20,
         paddingBottom: 60

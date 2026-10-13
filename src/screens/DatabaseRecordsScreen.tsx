@@ -1,33 +1,41 @@
-import {useCallback, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {Alert, FlatList, Pressable, StyleSheet, Text, View} from "react-native";
 import {useFocusEffect} from "@react-navigation/native";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {StackParams} from "@/navigation/navigationStack";
-import {getAllRecords, DatabaseRecord} from "@/functions/GetAllRecords";
+import type {DatabaseRecord} from "@/functions/GetAllRecords";
+import {
+    loadLocalRecords,
+    subscribeToLocalRecords
+} from "@/functions/LocalRecordsStore";
+import {
+    downloadRecordsFromBackend,
+    uploadRecordsToBackend
+} from "@/functions/SyncRecords";
 
 type Props = NativeStackScreenProps<StackParams, "DatabaseRecordsScreen">;
 
 export default function DatabaseRecordsScreen({navigation}: Props) {
     const [records, setRecords] = useState<DatabaseRecord[]>([]);
     const [expandedRecords, setExpandedRecords] = useState<Set<string>>(new Set());
-    const loadRecords = useCallback(async () => {
-        try {
-            const result = await getAllRecords();
-            setRecords(result);
-        } catch (error) {
-            Alert.alert(
-                "Błąd",
-                error instanceof Error
-                    ? error.message
-                    : String(error)
-            );
-        }
+    const [isDownloading, setIsDownloading] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+
+    useEffect(() => {
+        loadLocalRecords().then(setRecords);
+        const unsubscribe = subscribeToLocalRecords(setRecords);
+        return () => {
+            unsubscribe();
+        };
     }, []);
+
+    // Przy wejściu na ekran wczytujemy TYLKO lokalną kopię.
     useFocusEffect(
         useCallback(() => {
-            loadRecords();
-        }, [loadRecords])
+            loadLocalRecords().then(setRecords);
+        }, [])
     );
+
     function toggleRecord(nrZleceniaiPudla: string) {
         setExpandedRecords(previous => {
             const updated = new Set(previous);
@@ -39,6 +47,47 @@ export default function DatabaseRecordsScreen({navigation}: Props) {
             return updated;
         });
     }
+
+    async function handleDownload() {
+        if (isDownloading || isUploading) {
+            return;
+        }
+        setIsDownloading(true);
+        try {
+            await downloadRecordsFromBackend();
+            // setLocalRecords wyemituje zmianę przez subskrypcję,
+            // ale dla pewności odświeżamy też ręcznie.
+            const fresh = await loadLocalRecords();
+            setRecords(fresh);
+            Alert.alert("Sukces", "Pobrano bazę z backendu.");
+        } catch (error) {
+            Alert.alert(
+                "Błąd",
+                error instanceof Error ? error.message : String(error)
+            );
+        } finally {
+            setIsDownloading(false);
+        }
+    }
+
+    async function handleUpload() {
+        if (isDownloading || isUploading) {
+            return;
+        }
+        setIsUploading(true);
+        try {
+            await uploadRecordsToBackend();
+            Alert.alert("Sukces", "Wysłano lokalną bazę na backend.");
+        } catch (error) {
+            Alert.alert(
+                "Błąd",
+                error instanceof Error ? error.message : String(error)
+            );
+        } finally {
+            setIsUploading(false);
+        }
+    }
+
     function renderRecord({item}: {item: DatabaseRecord}) {
         const expanded = expandedRecords.has(
             item.recordsJson.nrZleceniaiPudla
@@ -58,7 +107,8 @@ export default function DatabaseRecordsScreen({navigation}: Props) {
                             navigation.navigate(
                                 "RecordDetailsScreen",
                                 {
-                                    record: item.recordsJson
+                                    record: item.recordsJson,
+                                    mode: "local"
                                 }
                             );
                         }}>
@@ -153,6 +203,7 @@ export default function DatabaseRecordsScreen({navigation}: Props) {
             </View>
         );
     }
+
     return (
         <View style={styles.container}>
             <Text style={styles.title}>
@@ -163,21 +214,50 @@ export default function DatabaseRecordsScreen({navigation}: Props) {
                 keyExtractor={(item) =>
                     item.recordsJson.nrZleceniaiPudla
                 }
-                renderItem={renderRecord}/>
+                renderItem={renderRecord}
+                contentContainerStyle={styles.listContent}/>
+            <View style={styles.footer}>
+                <Pressable
+                    disabled={isDownloading || isUploading}
+                    style={[
+                        styles.footerButton,
+                        (isDownloading || isUploading) && styles.footerButtonDisabled
+                    ]}
+                    onPress={handleDownload}>
+                    <Text style={styles.footerButtonText}>
+                        {isDownloading ? "Pobieranie..." : "Pobierz z backendu"}
+                    </Text>
+                </Pressable>
+                <Pressable
+                    disabled={isDownloading || isUploading}
+                    style={[
+                        styles.footerButton,
+                        (isDownloading || isUploading) && styles.footerButtonDisabled
+                    ]}
+                    onPress={handleUpload}>
+                    <Text style={styles.footerButtonText}>
+                        {isUploading ? "Wysyłanie..." : "Wyślij na backend"}
+                    </Text>
+                </Pressable>
+            </View>
         </View>
     );
 }
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
-        paddingBottom: 50,
-        backgroundColor: "#86C8E5",
+        paddingBottom: 20,
+        backgroundColor: "#86C8E5"
     },
     title: {
         fontSize: 26,
         fontWeight: "bold",
         marginBottom: 20
+    },
+    listContent: {
+        paddingBottom: 10
     },
     recordContainer: {
         marginBottom: 10,
@@ -253,5 +333,26 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: 18,
         padding: 8
+    },
+    footer: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        gap: 10,
+        paddingTop: 10
+    },
+    footerButton: {
+        flex: 1,
+        backgroundColor: "#FFFFFF",
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingVertical: 12,
+        alignItems: "center"
+    },
+    footerButtonDisabled: {
+        opacity: 0.5
+    },
+    footerButtonText: {
+        fontSize: 16,
+        fontWeight: "bold"
     }
 });

@@ -1,8 +1,8 @@
 import {Pressable, StyleSheet, Text, View} from "react-native";
-import {styles} from '@/styles'
 import {StackParams} from "@/navigation/navigationStack";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
-import { createLists } from "@/functions/CreateLists";
+import {styles} from "@/styles";
+import {createLists} from "@/functions/CreateLists";
 import {addPdfRecords} from "@/functions/AddPdfRecords";
 
 type Props = NativeStackScreenProps<StackParams, "HomeScreen">;
@@ -31,10 +31,10 @@ export default function HomeScreen({ navigation }: Props){
                    </Text>
                </View>
            </Pressable>
-           <Pressable>
+           <Pressable onPress={() => navigation.navigate("DatabaseRecordsScreen")}>
                <View style={styles.middleRoundedRectangle}>
                    <Text style={styles.middleButtons}>
-                       Wybór pozycji z bazy danych
+                       Lokalna baza danych
                    </Text>
                </View>
            </Pressable>

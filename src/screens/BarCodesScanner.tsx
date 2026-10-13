@@ -51,7 +51,8 @@ export default function BarCodesScanner({ navigation }: Props) {
             navigation.navigate(
                 "RecordDetailsScreen",
                 {
-                    record: record
+                    record: record,
+                    mode: "local"
                 }
             );
 

@@ -94,8 +94,11 @@ export default function LfDnsConnection() {
                         {item.name} — {item.addresses?.[0]}:{item.port}
                     </Text>
                         {isConnecting && (
-                            <Text>Trwa łączenie z backendem...</Text>
-                        ) && <ActivityIndicator />}
+                            <>
+                                <Text>Trwa łączenie z backendem...</Text>
+                                <ActivityIndicator />
+                            </>
+                        )}
                     </Pressable>)}
                 keyExtractor={(item, index) => `${item.name}-${item.port}-${index}`}/>
         </View>

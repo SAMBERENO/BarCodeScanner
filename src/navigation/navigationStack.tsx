@@ -1,6 +1,6 @@
 import {NavigationContainer} from "@react-navigation/native";
 import {createNativeStackNavigator} from "@react-navigation/native-stack";
-import HomeScreen from "../screens/HomeScreen";
+import HomeScreen from "@/screens/HomeScreen";
 import DnsConnectionScreen from "@/screens/DnsConnectionScreen";
 import BarCodesScanner from "@/screens/BarCodesScanner";
 import {RecordsJson} from "@/functions/GetRecordByCode";
@@ -16,6 +16,7 @@ export type StackParams = {
     DatabaseRecordsScreen: undefined;
     RecordDetailsScreen: {
         record: RecordsJson;
+        mode?: "local" | "remote";
     };
 }
 
