@@ -3,9 +3,12 @@ import {Alert, Pressable, ScrollView, Text, TextInput, View, StyleSheet} from "r
 import {updateRecord} from "@/functions/UpdateRecord";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {StackParams} from "@/navigation/navigationStack";
-import {RecordsJson} from "@/functions/GetRecordByCode";
-import {loadLocalRecords, updateLocalRecord} from "@/functions/LocalRecordsStore";
-import type { DatabaseRecord } from "@/functions/GetAllRecords";
+import type {RecordsJson} from "@/functions/DTO";
+import {
+    loadLocalRecords,
+    updateLocalRecord,
+    type LocalDatabaseRecord
+} from "@/functions/LocalRecordsStore";
 
 type Props = NativeStackScreenProps<StackParams, "RecordDetailsScreen">;
 
@@ -33,14 +36,15 @@ export default function RecordDetailsScreen({navigation, route}: Props) {
 
     async function buildDatabaseRecord(
         recordsJson: RecordsJson
-    ): Promise<DatabaseRecord> {
+    ): Promise<LocalDatabaseRecord> {
         const current = await loadLocalRecords();
         const existing = current.find(
             r => r.recordsJson.nrZleceniaiPudla === recordsJson.nrZleceniaiPudla
         );
         return {
             recordsJson,
-            zatwierdzone: existing?.zatwierdzone ?? 0
+            zatwierdzone: existing?.zatwierdzone ?? 0,
+            zatwierdzoneLokalnie: 1
         };
     }
 
@@ -49,7 +53,7 @@ export default function RecordDetailsScreen({navigation, route}: Props) {
             const updatedRecord = buildUpdatedRecord();
             const databaseRecord = await buildDatabaseRecord(updatedRecord);
 
-            // Zawsze aktualizujemy lokalną kopię.
+            // Zawsze aktualizujemy lokalną kopię (ustawia flagę lokalną = 1).
             await updateLocalRecord(databaseRecord);
 
             // Tryb "remote" dodatkowo wypycha na backend.

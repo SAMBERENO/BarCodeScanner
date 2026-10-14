@@ -3,7 +3,7 @@ import {createNativeStackNavigator} from "@react-navigation/native-stack";
 import HomeScreen from "@/screens/HomeScreen";
 import DnsConnectionScreen from "@/screens/DnsConnectionScreen";
 import BarCodesScanner from "@/screens/BarCodesScanner";
-import {RecordsJson} from "@/functions/GetRecordByCode";
+import {RecordsJson} from "@/functions/DTO";
 import RecordDetailsScreen from "@/screens/RecordDetailsScreen";
 import QrScannerScreen from "@/screens/QrScannerScreen";
 import DatabaseRecordsScreen from "@/screens/DatabaseRecordsScreen";

@@ -1,5 +1,5 @@
 import { getBackendUrl } from "./ConnectToService";
-import type { RecordsJson } from "./GetRecordByCode";
+import type { RecordsJson } from "./DTO";
 import {fetchWithTimeout} from "@/functions/fetchWithTimeout";
 export type DatabaseRecord = {
     recordsJson: RecordsJson;
