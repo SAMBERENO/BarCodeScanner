@@ -4,10 +4,6 @@ import type { RecordsJsonCollection } from "./DTO";
 
 const STORAGE_KEY = "local_records_v1";
 
-/**
- * Lokalny rekord — rozszerzenie DatabaseRecord o flagę tylko-mobilną.
- * `zatwierdzoneLokalnie` NIE jest wysyłane na backend.
- */
 export type LocalDatabaseRecord = DatabaseRecord & {
     zatwierdzoneLokalnie: number;
 };
@@ -40,7 +36,6 @@ export async function loadLocalRecords(): Promise<LocalDatabaseRecord[]> {
         const parsed = raw
             ? (JSON.parse(raw) as LocalDatabaseRecord[])
             : [];
-        // Zabezpieczenie: stare rekordy bez flagi dostają domyślne 0.
         cache = parsed.map(record => ({
             ...record,
             zatwierdzoneLokalnie: record.zatwierdzoneLokalnie ?? 0

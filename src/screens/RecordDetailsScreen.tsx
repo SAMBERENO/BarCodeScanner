@@ -122,7 +122,7 @@ export default function RecordDetailsScreen({navigation, route}: Props) {
                 value={dataProdukcji}
                 keyboardType="default"
                 onChangeText={(text) => {
-                    const filtered = text.replace(/[^0-9/]/g, "");
+                    const filtered = text.replace(/[^0-9.]/g, "");
                     setDataProdukcji(filtered);
                 }}
             />
