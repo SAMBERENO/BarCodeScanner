@@ -55,9 +55,9 @@ export default function HomeScreen({ navigation }: Props){
        </View>
        <View style={styles.footerContainer}>
            <View style={styles.footerRoundedRectangle}>
-               <Pressable onPress={() => navigation.navigate("DatabaseRecordsScreen")}>
+               <Pressable onPress={() => navigation.navigate("AddRecordScreen")}>
                     <Text style={styles.footerButtons}>
-                        Zawartość bazy danych
+                        Ręczne dodanie pozycji
                     </Text>
                </Pressable>
            </View>

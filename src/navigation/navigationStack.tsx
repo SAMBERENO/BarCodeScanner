@@ -7,6 +7,7 @@ import {RecordsJson} from "@/functions/DTO";
 import RecordDetailsScreen from "@/screens/RecordDetailsScreen";
 import QrScannerScreen from "@/screens/QrScannerScreen";
 import DatabaseRecordsScreen from "@/screens/DatabaseRecordsScreen";
+import AddRecordScreen from "@/screens/AddRecordScreen";
 
 export type StackParams = {
     HomeScreen: undefined;
@@ -14,6 +15,7 @@ export type StackParams = {
     BarCodesScanner: undefined;
     QrScannerScreen: undefined;
     DatabaseRecordsScreen: undefined;
+    AddRecordScreen: undefined;
     RecordDetailsScreen: {
         record: RecordsJson;
         mode?: "local" | "remote";
@@ -41,6 +43,9 @@ function MyStack() {
                           options={{headerShown: false}}
             />
             <Stack.Screen name="DatabaseRecordsScreen" component={DatabaseRecordsScreen}
+                          options={{headerShown: false}}
+            />
+            <Stack.Screen name="AddRecordScreen" component={AddRecordScreen}
                           options={{headerShown: false}}
             />
         </Stack.Navigator>

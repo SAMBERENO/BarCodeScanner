@@ -47,6 +47,27 @@ export async function loadLocalRecords(): Promise<LocalDatabaseRecord[]> {
     return cache;
 }
 
+export async function addLocalRecord(
+    record: LocalDatabaseRecord
+): Promise<void> {
+    const current = await loadLocalRecords();
+    const key = record.recordsJson.nrZleceniaiPudla;
+
+    const exists = current.some(
+        r => r.recordsJson.nrZleceniaiPudla === key
+    );
+
+    if (exists) {
+        const next = current.map(r =>
+            r.recordsJson.nrZleceniaiPudla === key ? record : r
+        );
+        await setLocalRecords(next);
+        return;
+    }
+
+    await setLocalRecords([...current, record]);
+}
+
 export async function setLocalRecords(
     records: LocalDatabaseRecord[]
 ): Promise<void> {
