@@ -3,16 +3,20 @@ import {Alert, FlatList, Pressable, StyleSheet, Text, View} from "react-native";
 import {useFocusEffect} from "@react-navigation/native";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {StackParams} from "@/navigation/navigationStack";
-import {loadLocalRecords, subscribeToLocalRecords, type LocalDatabaseRecord} from "@/functions/LocalRecordsStore";
+import {loadLocalRecords, subscribeToLocalRecords, removeLocalRecords, type LocalDatabaseRecord} from "@/functions/LocalRecordsStore";
 import {downloadRecordsFromBackend, uploadRecordsToBackend} from "@/functions/SyncRecords";
+import {deleteRecordsFromBackend} from "@/functions/DeleteRecords";
 
 type Props = NativeStackScreenProps<StackParams, "DatabaseRecordsScreen">;
 
 export default function DatabaseRecordsScreen({navigation}: Props) {
     const [records, setRecords] = useState<LocalDatabaseRecord[]>([]);
     const [expandedRecords, setExpandedRecords] = useState<Set<string>>(new Set());
+    const [selectedRecords, setSelectedRecords] = useState<Set<string>>(new Set());
+    const [isSelectionMode, setIsSelectionMode] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
         loadLocalRecords().then(setRecords);
@@ -40,8 +44,38 @@ export default function DatabaseRecordsScreen({navigation}: Props) {
         });
     }
 
+    function toggleSelection(nrZleceniaiPudla: string) {
+        setSelectedRecords(previous => {
+            const updated = new Set(previous);
+            if (updated.has(nrZleceniaiPudla)) {
+                updated.delete(nrZleceniaiPudla);
+            } else {
+                updated.add(nrZleceniaiPudla);
+            }
+            return updated;
+        });
+    }
+
+    function enterSelectionMode() {
+        setIsSelectionMode(true);
+        setSelectedRecords(new Set());
+    }
+
+    function exitSelectionMode() {
+        setIsSelectionMode(false);
+        setSelectedRecords(new Set());
+    }
+
+    function toggleSelectionMode() {
+        if (isSelectionMode) {
+            exitSelectionMode();
+        } else {
+            enterSelectionMode();
+        }
+    }
+
     async function confirmDownload() {
-        if (isDownloading || isUploading) {
+        if (isDownloading || isUploading || isDeleting) {
             return;
         }
         Alert.alert(
@@ -61,7 +95,7 @@ export default function DatabaseRecordsScreen({navigation}: Props) {
     }
 
     function confirmUpload() {
-        if (isDownloading || isUploading) {
+        if (isDownloading || isUploading || isDeleting) {
             return;
         }
         Alert.alert(
@@ -81,7 +115,7 @@ export default function DatabaseRecordsScreen({navigation}: Props) {
     }
 
     async function handleDownload() {
-        if (isDownloading || isUploading) {
+        if (isDownloading || isUploading || isDeleting) {
             return;
         }
         setIsDownloading(true);
@@ -101,7 +135,7 @@ export default function DatabaseRecordsScreen({navigation}: Props) {
     }
 
     async function handleUpload() {
-        if (isDownloading || isUploading) {
+        if (isDownloading || isUploading || isDeleting) {
             return;
         }
         setIsUploading(true);
@@ -118,10 +152,37 @@ export default function DatabaseRecordsScreen({navigation}: Props) {
         }
     }
 
+    async function handleDeleteSelected() {
+        if (isDownloading || isUploading || isDeleting) {
+            return;
+        }
+        if (selectedRecords.size === 0) {
+            return;
+        }
+
+        const keys = Array.from(selectedRecords);
+        setIsDeleting(true);
+        try {
+            await deleteRecordsFromBackend(keys);
+            await removeLocalRecords(keys);
+            const fresh = await loadLocalRecords();
+            setRecords(fresh);
+            Alert.alert("Sukces", "Usunięto pozycje");
+            exitSelectionMode();
+        } catch (error) {
+            Alert.alert(
+                "Błąd",
+                error instanceof Error ? error.message : String(error)
+            );
+        } finally {
+            setIsDeleting(false);
+        }
+    }
+
     function renderRecord({item}: {item: LocalDatabaseRecord}) {
-        const expanded = expandedRecords.has(
-            item.recordsJson.nrZleceniaiPudla
-        );
+        const key = item.recordsJson.nrZleceniaiPudla;
+        const expanded = expandedRecords.has(key);
+        const selected = selectedRecords.has(key);
 
         const recordStyle =
             item.zatwierdzone === 1
@@ -136,6 +197,9 @@ export default function DatabaseRecordsScreen({navigation}: Props) {
                     <Pressable
                         style={styles.editButton}
                         onPress={() => {
+                            if (isSelectionMode) {
+                                return;
+                            }
                             navigation.navigate(
                                 "RecordDetailsScreen",
                                 {
@@ -151,13 +215,18 @@ export default function DatabaseRecordsScreen({navigation}: Props) {
                     <Text style={styles.recordNumber}>
                         {item.recordsJson.nrZleceniaiPudla}
                     </Text>
+                    {isSelectionMode && (
+                        <Pressable
+                            style={styles.checkbox}
+                            onPress={() => toggleSelection(key)}>
+                            <Text style={styles.checkboxMark}>
+                                {selected ? "✓" : ""}
+                            </Text>
+                        </Pressable>
+                    )}
                     <Pressable
                         style={styles.expandButton}
-                        onPress={() =>
-                            toggleRecord(
-                                item.recordsJson.nrZleceniaiPudla
-                            )
-                        }>
+                        onPress={() => toggleRecord(key)}>
                         <Text style={styles.expandButtonText}>
                             {expanded ? "▼" : "▶"}
                         </Text>
@@ -238,9 +307,18 @@ export default function DatabaseRecordsScreen({navigation}: Props) {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>
-                Baza danych
-            </Text>
+            <View style={styles.titleRow}>
+                <Text style={styles.title}>
+                    Baza danych
+                </Text>
+                <Pressable
+                    style={styles.deleteModeButton}
+                    onPress={toggleSelectionMode}>
+                    <Text style={styles.deleteModeButtonText}>
+                        Usuń
+                    </Text>
+                </Pressable>
+            </View>
             <FlatList
                 data={records}
                 keyExtractor={(item) =>
@@ -249,33 +327,51 @@ export default function DatabaseRecordsScreen({navigation}: Props) {
                 renderItem={renderRecord}
                 contentContainerStyle={styles.listContent}/>
             <View style={styles.footer}>
-                <Pressable
-                    disabled={isDownloading || isUploading}
-                    style={[
-                        styles.footerPressable,
-                        (isDownloading || isUploading) && styles.footerDisabled
-                    ]}
-                    onPress={confirmDownload}>
-                    <View style={styles.footerRoundedRectangle}>
-                        <Text style={styles.footerButtons}>
-                            {isDownloading ? "Pobieranie..." : "Pobierz z backendu"}
-                        </Text>
-                    </View>
-                </Pressable>
+                {isSelectionMode ? (
+                    <Pressable
+                        disabled={isDeleting}
+                        style={[
+                            styles.footerPressable,
+                            isDeleting && styles.footerDisabled
+                        ]}
+                        onPress={handleDeleteSelected}>
+                        <View style={styles.footerRoundedRectangle}>
+                            <Text style={styles.footerButtons}>
+                                {isDeleting ? "Usuwanie..." : "Usuń zaznaczone"}
+                            </Text>
+                        </View>
+                    </Pressable>
+                ) : (
+                    <>
+                        <Pressable
+                            disabled={isDownloading || isUploading}
+                            style={[
+                                styles.footerPressable,
+                                (isDownloading || isUploading) && styles.footerDisabled
+                            ]}
+                            onPress={confirmDownload}>
+                            <View style={styles.footerRoundedRectangle}>
+                                <Text style={styles.footerButtons}>
+                                    {isDownloading ? "Pobieranie..." : "Pobierz z backendu"}
+                                </Text>
+                            </View>
+                        </Pressable>
 
-                <Pressable
-                    disabled={isDownloading || isUploading}
-                    style={[
-                        styles.footerPressable,
-                        (isDownloading || isUploading) && styles.footerDisabled
-                    ]}
-                    onPress={confirmUpload}>
-                    <View style={styles.footerRoundedRectangle}>
-                        <Text style={styles.footerButtons}>
-                            {isUploading ? "Wysyłanie..." : "Wyślij na backend"}
-                        </Text>
-                    </View>
-                </Pressable>
+                        <Pressable
+                            disabled={isDownloading || isUploading}
+                            style={[
+                                styles.footerPressable,
+                                (isDownloading || isUploading) && styles.footerDisabled
+                            ]}
+                            onPress={confirmUpload}>
+                            <View style={styles.footerRoundedRectangle}>
+                                <Text style={styles.footerButtons}>
+                                    {isUploading ? "Wysyłanie..." : "Wyślij na backend"}
+                                </Text>
+                            </View>
+                        </Pressable>
+                    </>
+                )}
             </View>
         </View>
     );
@@ -288,15 +384,30 @@ const styles = StyleSheet.create({
         paddingBottom: 5,
         backgroundColor: "#86C8E5"
     },
+    titleRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        paddingHorizontal: 20,
+        marginBottom: 20
+    },
     title: {
         fontSize: 26,
+        fontWeight: "bold"
+    },
+    deleteModeButton: {
+        paddingHorizontal: 10,
+        justifyContent: "center",
+        alignItems: "center"
+    },
+    deleteModeButtonText: {
+        fontSize: 26,
         fontWeight: "bold",
-        marginBottom: 20,
-        paddingHorizontal: 20,
+        color: "#B00020"
     },
     listContent: {
         paddingBottom: 10,
-        paddingHorizontal: 20,
+        paddingHorizontal: 20
     },
     recordContainer: {
         marginBottom: 10,
@@ -332,6 +443,20 @@ const styles = StyleSheet.create({
     recordNumber: {
         flex: 1,
         fontSize: 18,
+        fontWeight: "bold"
+    },
+    checkbox: {
+        width: 30,
+        height: 30,
+        borderWidth: 2,
+        borderRadius: 5,
+        alignItems: "center",
+        justifyContent: "center",
+        marginRight: 10,
+        backgroundColor: "white"
+    },
+    checkboxMark: {
+        fontSize: 20,
         fontWeight: "bold"
     },
     expandButton: {
@@ -381,9 +506,13 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         alignItems: "center",
         height: "16%",
+        gap: 10,
         paddingTop: 2,
         paddingBottom: 44,
         paddingHorizontal: 3
+    },
+    footerPressable: {
+        width: "49%"
     },
     footerRoundedRectangle: {
         borderRadius: 5,
@@ -391,15 +520,12 @@ const styles = StyleSheet.create({
         height: "100%",
         width: "100%",
         justifyContent: "center",
-        backgroundColor: "white",
+        backgroundColor: "white"
     },
     footerButtons: {
         fontWeight: "bold",
         fontSize: 20,
         textAlign: "center"
-    },
-    footerPressable: {
-        width: "49%",
     },
     footerDisabled: {
         opacity: 0.5

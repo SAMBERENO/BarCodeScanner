@@ -136,3 +136,16 @@ export async function markRecordsAsSynced(
 
     await setLocalRecords(next);
 }
+
+export async function removeLocalRecords(
+    nrZleceniaiPudlaList: string[]
+): Promise<void> {
+    const current = await loadLocalRecords();
+    const keys = new Set(nrZleceniaiPudlaList);
+
+    const next = current.filter(
+        record => !keys.has(record.recordsJson.nrZleceniaiPudla)
+    );
+
+    await setLocalRecords(next);
+}

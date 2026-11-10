@@ -79,4 +79,3 @@ const localStyles = StyleSheet.create({
         alignItems: "center"
     }
 })
-
